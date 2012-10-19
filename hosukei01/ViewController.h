@@ -37,5 +37,8 @@
 -(void)alertView:(UIAlertView*)alertView;   //クリアアラート分岐
 -(void)rockSwitch;                          //画面ロックのスイッチ
 -(void)rockAction:(id)sender;               //画面をっク
-- (void)impAdView;                          //インプレッション広告表示
+-(void)impAdView;                          //インプレッション広告表示
+-(void)changeSound1;
+-(void)changeSound2;
+
 @end

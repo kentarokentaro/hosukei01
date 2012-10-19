@@ -5,7 +5,7 @@
 //  Created by kentaro_miura on 12/10/12.
 //  Copyright (c) 2012年 kentaro_miura. All rights reserved.
 //
-
+#import <AudioToolbox/AudioToolbox.h>
 #import "ViewController.h"
 #import "InfoViewController.h"
 
@@ -36,7 +36,7 @@
 {
     [super viewDidUnload];
 }
-#pragma stepCofig
+#pragma mark stepCofig
 //加速度センサー
 -(void)positionCheck
 {
@@ -88,26 +88,28 @@
     stepView.font = [UIFont fontWithName:@"Helvetica-Bold" size:28];
     [self.view addSubview:stepView];
 }
-#pragma imageChangeConfig
+#pragma mark imageChangeConfig
 //歩数が一定値に達した場合のアクション
 - (void)viewChange
 {
     //一定枚数を超えたら始めからループ
-    if(imageNum % 10 == 0 && imageNum > 100){
+    if(imageNum % 10 == 0 && imageNum > 4400){
         NSLog(@"ループ発動");
         imageNum =0;
         NSString *imageName = [NSString stringWithFormat:@"%d.png", imageNum];
         customImageView.image = nil;
         customImageView.image = [UIImage imageNamed: imageName];
+        [self changeSound2];
     }else if(imageNum % 10 == 0 &&  imageNum> 0) {
         NSLog(@"チェンジ発動");
         NSString *imageName = [NSString stringWithFormat:@"%d.png", imageNum];
         customImageView.image = nil;
         customImageView.image = [UIImage imageNamed: imageName];
+        [self changeSound1];
     }
 }
 
-#pragma infoView
+#pragma mark infoView
 //インフォメーション画面を出すスイッチ
 -(void)infoButton
 {
@@ -133,7 +135,7 @@
     [self presentModalViewController:infoViewController animated:YES];
 }
 
-#pragma clearAlert
+#pragma mark clearAlert
 //歩数をクリアするボタン
 -(void)clearButton
 {
@@ -165,7 +167,7 @@
     }
 }
 
-#pragma rockSlider
+#pragma mark rockSlider
 //自動スリープを無効ボタン
 -(void)rockSwitch
 {
@@ -183,8 +185,32 @@
         [[UIApplication sharedApplication] setIdleTimerDisabled:YES];
     }
 }
+#pragma mark sound
+-(void)changeSound1
+{
+    SystemSoundID customSystemSoundID1;
 
-#pragma impAd
+    NSString *soundPath = [[NSBundle mainBundle] pathForResource:@"change" ofType:@"mp3"];
+    NSURL *soundUrl1 = [NSURL fileURLWithPath:soundPath];
+    AudioServicesCreateSystemSoundID((__bridge CFURLRef)soundUrl1,&customSystemSoundID1);
+    
+    AudioServicesPlaySystemSound(customSystemSoundID1);
+}
+
+-(void)changeSound2
+{
+    SystemSoundID customSystemSoundID2;
+    
+    NSString *soundPath = [[NSBundle mainBundle] pathForResource:@"deai" ofType:@"mp3"];
+    NSURL *soundUrl1 = [NSURL fileURLWithPath:soundPath];
+    AudioServicesCreateSystemSoundID((__bridge CFURLRef)soundUrl1,&customSystemSoundID2);
+    
+    AudioServicesPlaySystemSound(customSystemSoundID2);
+}
+
+
+
+#pragma mark impAd
 
 - (void)impAdView
 {
