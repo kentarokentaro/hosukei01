@@ -8,9 +8,12 @@
 #import <AudioToolbox/AudioToolbox.h>
 #import "ViewController.h"
 #import "InfoViewController.h"
+#import "CollectionViewController.h"
 
 @interface ViewController ()
-
+{
+    UIImage *webImage;
+}
 @end
 
 @implementation ViewController
@@ -18,10 +21,10 @@
 - (void)viewDidLoad
 {
     [super viewDidLoad];
-    
+
     //イメージビュー（画像の張り付け）
     customImageView = [[UIImageView alloc] initWithFrame:CGRectMake(0.0, 0.0, 320.0, 480.0)]; //枠を生成
-    customImageView.image = [UIImage imageNamed:@"0.png"];
+    customImageView.image = [UIImage imageNamed:@"0.jpg"];
     [self.view addSubview:customImageView];
     
     [self positionCheck];
@@ -30,6 +33,18 @@
     [self clearButton];
     [self rockSwitch];
     [self impAdView];
+    
+    //2本指でスワイプ
+    UISwipeGestureRecognizer *swipeGes = [[UISwipeGestureRecognizer alloc] initWithTarget:self action:@selector(swipeGes:)];
+    swipeGes.numberOfTouchesRequired = 2;
+    [self.view addGestureRecognizer:swipeGes];
+}
+//スワイプでコレクションビューへ
+- (void)swipeGes:(UISwipeGestureRecognizer *)sender
+{
+    CollectionViewController *collectionViewContoller = [[[CollectionViewController alloc] init] autorelease];
+    collectionViewContoller.stepNumColl = stepNum;
+    [self presentViewController:collectionViewContoller animated:NO completion:nil];
 }
 
 - (void)viewDidUnload
@@ -52,17 +67,17 @@
                                                 accX = acceleration.x;
                                                 accY = acceleration.y;
                                                 accZ = acceleration.z;
-                                                [self logCheck];
+                                                //[self logCheck];
                                                 [self countCheck];
                                             }];
     }
 }
 
 //加速度センサーのログ表示　positionCheckへ
--(void)logCheck
-{
-    NSLog(@"X:%f Y:%f Z:%f",accX,accY,accZ);    //座標ログを表示
-}
+//-(void)logCheck
+//{
+//    //NSLog(@"X:%f Y:%f Z:%f",accX,accY,accZ);    //座標ログを表示
+//}
 //歩数カウントチェック　→　positionCheckへ
 -(void)countCheck
 {
@@ -70,9 +85,9 @@
         stepNum++;
         intervalNum++;
         imageNum++;
-        NSLog(@"%dstepNum",stepNum);
-        NSLog(@"%dintervalNum",intervalNum);
-        NSLog(@"%dimageNum",imageNum);
+//        NSLog(@"%dstepNum",stepNum);
+//        NSLog(@"%dintervalNum",intervalNum);
+//        NSLog(@"%dimageNum",imageNum);
         stepView.text = [NSString stringWithFormat:@"%dstep", intervalNum];
         [self viewChange];
     }
@@ -88,25 +103,28 @@
     stepView.font = [UIFont fontWithName:@"Helvetica-Bold" size:28];
     [self.view addSubview:stepView];
 }
+
 #pragma mark imageChangeConfig
 //歩数が一定値に達した場合のアクション
 - (void)viewChange
 {
-    //一定枚数を超えたら始めからループ
-    if(imageNum % 10 == 0 && imageNum > 4400){
-        NSLog(@"ループ発動");
-        imageNum =0;
-        NSString *imageName = [NSString stringWithFormat:@"%d.png", imageNum];
-        customImageView.image = nil;
-        customImageView.image = [UIImage imageNamed: imageName];
-        [self changeSound2];
-    }else if(imageNum % 10 == 0 &&  imageNum> 0) {
-        NSLog(@"チェンジ発動");
-        NSString *imageName = [NSString stringWithFormat:@"%d.png", imageNum];
-        customImageView.image = nil;
-        customImageView.image = [UIImage imageNamed: imageName];
-        [self changeSound1];
-    }
+        //一定枚数を超えたら始めからループ
+        if(imageNum % 10 == 0 && imageNum > 4400){
+            NSLog(@"%d",imageNum);
+//            NSLog(@"ループ発動");
+            imageNum =0;
+            NSString *imageName = [NSString stringWithFormat:@"%d.jpg", imageNum];
+            customImageView.image = nil;
+            customImageView.image = [UIImage imageNamed: imageName];
+
+            //１０回超えたら画像チェンジ（サーバより呼び出し）
+        }else if(imageNum % 10 == 0 &&  imageNum> 0) {
+//            NSLog(@"チェンジ発動");
+            NSString *imageName = [NSString stringWithFormat:@"%d.jpg", imageNum];
+            customImageView.image = nil;
+            customImageView.image = [[UIImage imageNamed: imageName] autorelease];
+            [self changeSound1];
+        }
 }
 
 #pragma mark infoView
@@ -122,6 +140,7 @@
                        forControlEvents:UIControlEventTouchUpInside];
     [self.view addSubview:infoBtn];
 }
+
 //インフォメーション画面をモーダルで表示
 -(void)infoView:(UIButton*)sender;
 {
@@ -131,7 +150,8 @@
     infoViewController = [[InfoViewController alloc]
                           initWithNibName:@"InfoViewController"
                            bundle:nil];
-    infoViewController.modalTransitionStyle = UIModalPresentationFullScreen + UIModalTransitionStylePartialCurl;
+    //infoViewController.modalTransitionStyle = UIModalPresentationPageSheet + UIModalTransitionStylePartialCurl;
+    infoViewController.modalTransitionStyle = UIModalPresentationPageSheet + UIModalTransitionStylePartialCurl;
     [self presentModalViewController:infoViewController animated:YES];
 }
 
@@ -161,9 +181,10 @@
 //歩数をクリア
 -(void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex
 {
-    if ((buttonIndex = 1)){
+    if (buttonIndex == 1){
         intervalNum = 0;
-    }else if((buttonIndex = 0)){
+        stepView.text = [NSString stringWithFormat:@"%dstep",intervalNum];
+    }else if(buttonIndex == 0){
     }
 }
 
@@ -185,6 +206,7 @@
         [[UIApplication sharedApplication] setIdleTimerDisabled:YES];
     }
 }
+
 #pragma mark sound
 -(void)changeSound1
 {
@@ -192,23 +214,10 @@
 
     NSString *soundPath = [[NSBundle mainBundle] pathForResource:@"change" ofType:@"mp3"];
     NSURL *soundUrl1 = [NSURL fileURLWithPath:soundPath];
-    AudioServicesCreateSystemSoundID((__bridge CFURLRef)soundUrl1,&customSystemSoundID1);
+    AudioServicesCreateSystemSoundID((CFURLRef)soundUrl1,&customSystemSoundID1);
     
     AudioServicesPlaySystemSound(customSystemSoundID1);
 }
-
--(void)changeSound2
-{
-    SystemSoundID customSystemSoundID2;
-    
-    NSString *soundPath = [[NSBundle mainBundle] pathForResource:@"deai" ofType:@"mp3"];
-    NSURL *soundUrl1 = [NSURL fileURLWithPath:soundPath];
-    AudioServicesCreateSystemSoundID((__bridge CFURLRef)soundUrl1,&customSystemSoundID2);
-    
-    AudioServicesPlaySystemSound(customSystemSoundID2);
-}
-
-
 
 #pragma mark impAd
 
