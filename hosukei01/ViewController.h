@@ -17,14 +17,14 @@
     UILabel *stepView;                      //歩数表示
     CMMotionManager *motionManager;         //加速度センサー
     UIImageView *customImageView;           //チェンジ画面イメージ
-//    UIImage *webImg;//webから画像
-//    UIImageView *webImgView;
     LogoAdView *adView;                     //インプレッション広告
     
     float accX,accY,accZ;                   //加速度座標
-    int stepNum;                            //総歩数
     int intervalNum;                        //表示用歩数
     int imageNum;                           //画像チェンジ用歩数
+    int wakeCnt;
+    int sn;
+    int ss;
 }
 
 -(void)viewDispray;                         //画面表示
@@ -38,10 +38,7 @@
 -(void)clearAlert;                          //クリアボタン押下時のクリアアラート
 -(void)alertView:(UIAlertView*)alertView;   //クリアアラート分岐
 -(void)rockSwitch;                          //画面ロックのスイッチ
--(void)rockAction:(id)sender;               //画面をっク
+-(void)rockAction:(id)sender;               //画面ロック
 -(void)impAdView;                           //インプレッション広告表示
--(void)changeSound1;                        //効果音
--(id)initWithFrame:(CGRect)frame withUrl:(NSURL *)url;
-
 
 @end

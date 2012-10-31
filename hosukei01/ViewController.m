@@ -8,7 +8,6 @@
 #import <AudioToolbox/AudioToolbox.h>
 #import "ViewController.h"
 #import "InfoViewController.h"
-#import "CollectionViewController.h"
 
 @interface ViewController ()
 {
@@ -18,12 +17,11 @@
 
 @implementation ViewController
 
-- (void)viewDidLoad
+-(void)viewDidLoad
 {
     [super viewDidLoad];
-
-    //イメージビュー（画像の張り付け）
-    customImageView = [[UIImageView alloc] initWithFrame:CGRectMake(0.0, 0.0, 320.0, 480.0)]; //枠を生成
+    
+    customImageView = [[UIImageView alloc] initWithFrame:CGRectMake(0.0, 0.0, 320.0, 480.0)];
     customImageView.image = [UIImage imageNamed:@"0.jpg"];
     [self.view addSubview:customImageView];
     
@@ -33,30 +31,21 @@
     [self clearButton];
     [self rockSwitch];
     [self impAdView];
-    
-    //2本指でスワイプ
-    UISwipeGestureRecognizer *swipeGes = [[UISwipeGestureRecognizer alloc] initWithTarget:self action:@selector(swipeGes:)];
-    swipeGes.numberOfTouchesRequired = 2;
-    [self.view addGestureRecognizer:swipeGes];
-}
-//スワイプでコレクションビューへ
-- (void)swipeGes:(UISwipeGestureRecognizer *)sender
-{
-    CollectionViewController *collectionViewContoller = [[[CollectionViewController alloc] init] autorelease];
-    collectionViewContoller.stepNumColl = stepNum;
-    [self presentViewController:collectionViewContoller animated:NO completion:nil];
+    [self wakeCount];
+    [self stepLoad];
 }
 
-- (void)viewDidUnload
+-(void)viewDidUnload
 {
     [super viewDidUnload];
+    [self stepSave];
 }
+
 #pragma mark stepCofig
-//加速度センサー
 -(void)positionCheck
 {
     motionManager = [[CMMotionManager alloc] init];
-    motionManager.accelerometerUpdateInterval = 0.1;
+    motionManager.accelerometerUpdateInterval = 0.6;
     
     NSOperationQueue *currentQueue = [NSOperationQueue currentQueue];
     
@@ -67,71 +56,51 @@
                                                 accX = acceleration.x;
                                                 accY = acceleration.y;
                                                 accZ = acceleration.z;
-                                                //[self logCheck];
                                                 [self countCheck];
                                             }];
     }
 }
 
-//加速度センサーのログ表示　positionCheckへ
-//-(void)logCheck
-//{
-//    //NSLog(@"X:%f Y:%f Z:%f",accX,accY,accZ);    //座標ログを表示
-//}
-//歩数カウントチェック　→　positionCheckへ
 -(void)countCheck
 {
-    if (accX > 0.1 || accY > 0.1 || accZ > 0.1) {
-        stepNum++;
+    if (accX > 0.8 || accY > 0.8 || accZ > 0.9) {
         intervalNum++;
         imageNum++;
-//        NSLog(@"%dstepNum",stepNum);
-//        NSLog(@"%dintervalNum",intervalNum);
-//        NSLog(@"%dimageNum",imageNum);
+
         stepView.text = [NSString stringWithFormat:@"%dstep", intervalNum];
         [self viewChange];
     }
 }
-//カウントされた歩数を表示
+
 -(void)stepView
 {
     stepView = [[UILabel alloc] initWithFrame:CGRectMake(0.0, 0.0, 320.0, 40.0)];
     stepView.backgroundColor = [UIColor colorWithRed:1.0 green:1.0 blue:1.0 alpha:0.4];
     stepView.textColor = [UIColor colorWithRed:0.4 green:0.3 blue:0.2 alpha:0.7];
     stepView.textAlignment = UITextAlignmentCenter;
-    stepView.text = @"0step";
+    stepView.text = [NSString stringWithFormat:@"%dstep",intervalNum];
     stepView.font = [UIFont fontWithName:@"Helvetica-Bold" size:28];
     [self.view addSubview:stepView];
 }
 
 #pragma mark imageChangeConfig
-//歩数が一定値に達した場合のアクション
-- (void)viewChange
+-(void)viewChange
 {
-        //一定枚数を超えたら始めからループ
-        if(imageNum % 10 == 0 && imageNum > 4400){
-            NSLog(@"%d",imageNum);
-//            NSLog(@"ループ発動");
+        if(imageNum % 100 == 0 && imageNum > 49000){
             imageNum =0;
-            NSString *imageName = [NSString stringWithFormat:@"%d.jpg", imageNum];
+            NSString *imageName = [NSString stringWithFormat:@"%d.jpg", imageNum/10];
             customImageView.image = nil;
             customImageView.image = [UIImage imageNamed: imageName];
-
-            //１０回超えたら画像チェンジ（サーバより呼び出し）
-        }else if(imageNum % 10 == 0 &&  imageNum> 0) {
-//            NSLog(@"チェンジ発動");
-            NSString *imageName = [NSString stringWithFormat:@"%d.jpg", imageNum];
+        }else if(imageNum % 100 == 0 &&  imageNum> 0) {
+            NSString *imageName = [NSString stringWithFormat:@"%d.jpg", imageNum/10];
             customImageView.image = nil;
             customImageView.image = [[UIImage imageNamed: imageName] autorelease];
-            [self changeSound1];
         }
 }
 
 #pragma mark infoView
-//インフォメーション画面を出すスイッチ
 -(void)infoButton
 {
-    //ボタンの生成
 	UIButton *infoBtn = [UIButton buttonWithType:UIButtonTypeCustom];
     infoBtn.frame = CGRectMake(-5.0, -10.0, 45, 60);
     [infoBtn setBackgroundImage:[UIImage imageNamed:@"botan_info.png"]
@@ -141,22 +110,17 @@
     [self.view addSubview:infoBtn];
 }
 
-//インフォメーション画面をモーダルで表示
 -(void)infoView:(UIButton*)sender;
 {
-    // InfoViewController生成
-    NSLog(@"モーダルインフォ");
     InfoViewController *infoViewController;
     infoViewController = [[InfoViewController alloc]
                           initWithNibName:@"InfoViewController"
                            bundle:nil];
-    //infoViewController.modalTransitionStyle = UIModalPresentationPageSheet + UIModalTransitionStylePartialCurl;
     infoViewController.modalTransitionStyle = UIModalPresentationPageSheet + UIModalTransitionStylePartialCurl;
     [self presentModalViewController:infoViewController animated:YES];
 }
 
 #pragma mark clearAlert
-//歩数をクリアするボタン
 -(void)clearButton
 {
     UIButton *clearBtn = [UIButton buttonWithType:UIButtonTypeCustom];
@@ -167,7 +131,7 @@
                         forControlEvents:UIControlEventTouchUpInside];
     [self.view addSubview:clearBtn];
 }
-//クリアアラート選択肢
+
 -(void)clearAlert:(UIAlertView*)alertView;
 {
     UIAlertView *alert = [[UIAlertView alloc] init];
@@ -178,7 +142,7 @@
     [alert addButtonWithTitle:@"はい"];
     [alert show];
 }
-//歩数をクリア
+
 -(void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex
 {
     if (buttonIndex == 1){
@@ -189,7 +153,6 @@
 }
 
 #pragma mark rockSlider
-//自動スリープを無効ボタン
 -(void)rockSwitch
 {
     UISwitch *customSwtich = [[UISwitch alloc] initWithFrame:CGRectMake(240.0, 5.0, 80, 30)];
@@ -198,7 +161,7 @@
     [customSwtich addTarget:self action:@selector(rockAction:) forControlEvents:UIControlEventTouchUpInside];
     [self.view addSubview:customSwtich];
 }
-//iPhoneの自動ロック（自動スリープ）を無効にする
+
 -(void)rockAction:(id)sender;
 {
     UISwitch *tempSwitch = sender;
@@ -207,17 +170,49 @@
     }
 }
 
-#pragma mark sound
--(void)changeSound1
-{
-    SystemSoundID customSystemSoundID1;
+#pragma mark stepSave
 
-    NSString *soundPath = [[NSBundle mainBundle] pathForResource:@"change" ofType:@"mp3"];
-    NSURL *soundUrl1 = [NSURL fileURLWithPath:soundPath];
-    AudioServicesCreateSystemSoundID((CFURLRef)soundUrl1,&customSystemSoundID1);
-    
-    AudioServicesPlaySystemSound(customSystemSoundID1);
+-(void)stepSave
+{
+    NSUserDefaults *ud = [NSUserDefaults standardUserDefaults];
+    [ud setInteger:imageNum forKey:@"KEY_SN"];
+    [ud setInteger:intervalNum forKey:@"KEY_SS"];
+    [ud synchronize];
+    sn = [ud integerForKey:@"KEY_SN"];
+    ss = [ud integerForKey:@"KEY_SS"];
+    NSLog(@"SimageNum %d",sn);
+    NSLog(@"SinatervalNum %d",ss);
 }
+
+-(void)wakeCount
+{
+    NSUserDefaults *udw = [NSUserDefaults standardUserDefaults];
+    wakeCnt = [udw integerForKey:@"wake"];
+    wakeCnt++;
+    [udw setInteger:wakeCnt forKey:@"wake"];
+    [udw synchronize];
+    NSLog(@"起動回数 : %d", wakeCnt);
+}
+
+-(void)stepLoad
+{
+//   NSUserDefaults *ud = [NSUserDefaults standardUserDefaults];
+//   [ud setInteger:imageNum forKey:@"KEY_SN"];
+//   [ud setInteger:intervalNum forKey:@"KEY_SS"];
+//   [ud synchronize];
+//   sn = [ud integerForKey:@"KEY_SN"];
+//   ss = [ud integerForKey:@"KEY_SS"];
+//    if(wakeCnt > 1){
+//        NSLog(@"imageNum %d",sn);
+//        NSLog(@"inatervalNum %d",ss);
+//        imageNum = sn;
+//        intervalNum = ss;
+//        }
+    [self stepSave];
+    NSLog(@"imageNum %d",sn);
+    NSLog(@"inatervalNum %d",ss);
+}
+
 
 #pragma mark impAd
 
@@ -227,14 +222,11 @@
     adView = [[LogoAdView alloc] initWithFrame:adSize];
     adView.delegate = self;
     adView.viewController = self;
-    // 画面の回転に対応させる
     adView.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin
     | UIViewAutoresizingFlexibleRightMargin
     | UIViewAutoresizingFlexibleTopMargin; [self.view addSubview:adView];
-    // 取得したパブリッシャーIDをセットする
-    NSString *publisherID = @"111111211114114";
+    NSString *publisherID = @"111111211116859";
     LogoAdRequest *req = [LogoAdRequest requestWithId:publisherID];
-    // リクエストを開始する
     [adView loadRequest:req];
 }
 
