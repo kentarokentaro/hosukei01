@@ -20,6 +20,8 @@
 -(void)viewDidLoad
 {
     [super viewDidLoad];
+    [self wakeCount];
+    [self stepLoad];
     
     customImageView = [[UIImageView alloc] initWithFrame:CGRectMake(0.0, 0.0, 320.0, 480.0)];
     customImageView.image = [UIImage imageNamed:@"0.jpg"];
@@ -31,8 +33,8 @@
     [self clearButton];
     [self rockSwitch];
     [self impAdView];
-    [self wakeCount];
-    [self stepLoad];
+    
+   
 }
 
 -(void)viewDidUnload
@@ -57,6 +59,7 @@
                                                 accY = acceleration.y;
                                                 accZ = acceleration.z;
                                                 [self countCheck];
+                                                [self stepSave];
                                             }];
     }
 }
@@ -66,7 +69,6 @@
     if (accX > 0.8 || accY > 0.8 || accZ > 0.9) {
         intervalNum++;
         imageNum++;
-
         stepView.text = [NSString stringWithFormat:@"%dstep", intervalNum];
         [self viewChange];
     }
@@ -196,21 +198,18 @@
 
 -(void)stepLoad
 {
-//   NSUserDefaults *ud = [NSUserDefaults standardUserDefaults];
-//   [ud setInteger:imageNum forKey:@"KEY_SN"];
-//   [ud setInteger:intervalNum forKey:@"KEY_SS"];
-//   [ud synchronize];
-//   sn = [ud integerForKey:@"KEY_SN"];
-//   ss = [ud integerForKey:@"KEY_SS"];
-//    if(wakeCnt > 1){
-//        NSLog(@"imageNum %d",sn);
-//        NSLog(@"inatervalNum %d",ss);
-//        imageNum = sn;
-//        intervalNum = ss;
-//        }
-    [self stepSave];
-    NSLog(@"imageNum %d",sn);
-    NSLog(@"inatervalNum %d",ss);
+    NSUserDefaults *ud = [NSUserDefaults standardUserDefaults];
+//    [ud setInteger:imageNum forKey:@"KEY_SN"];
+//    [ud setInteger:intervalNum forKey:@"KEY_SS"];
+//    [ud synchronize];
+    sn = [ud integerForKey:@"KEY_SN"];
+    ss = [ud integerForKey:@"KEY_SS"];
+    if(wakeCnt > 1){
+        NSLog(@"LimageNum %d",sn);
+        NSLog(@"LintervalNum %d",ss);
+        imageNum = sn;
+        intervalNum = ss;
+        }
 }
 
 
